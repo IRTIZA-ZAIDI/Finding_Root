@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+__init__.pyc
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+env/
+bin/
+include/
+lib/
+lib64/
+share/
+.pip/
+pip-log.txt
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.swm
+*.bak
+*.~*
+
+# Dependency Management
+node_modules/
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# OS or Editor Generated Files
+.DS_Store
+Thumbs.db
