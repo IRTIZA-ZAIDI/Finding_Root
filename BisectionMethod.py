@@ -26,18 +26,31 @@ class Function:
 def bisection_method(func, a, b, tol):
     i = 1
     data = []
-    errors = []  # Store relative errors for plotting
+    errors = []
     f_a = func(a)
     if f_a * func(b) >= 0:
         raise ValueError("The interval does not contain a root to the given function")
+
+    num_decimal_places = abs(int(math.log10(tol)))  # no. of decimals
+    print(num_decimal_places)
 
     while True:
         p = a + (b - a) / 2
         f_p = func(p)
 
-        data.append([i, a, b, p, f_p])
+        data.append(
+            [
+                i,
+                round(a, num_decimal_places),
+                round(b, num_decimal_places),
+                round(p, num_decimal_places),
+                round(f_p, num_decimal_places),
+            ]
+        )
 
-        if f_p == 0 or (b - a) / 2 < tol:
+        # Bound on Function Value : Absolute Error (E) = |f(p)|
+        # Relative Error: Relative Error (RE) = |x(i) - x(i-1)| / |x(i)|
+        if abs(f_p) < tol or (b - a) / 2 < tol:
             with open("DATA.txt", "w") as file:
                 with open("DATA.txt", "w") as file:
                     file.write(
@@ -50,13 +63,18 @@ def bisection_method(func, a, b, tol):
                         )
                     )
                     for row in data:
-                        # Use string formatting with fixed widths
+                        # Use string formatting with fixed widths and the determined number of decimal places
                         file.write(
-                            "{:<10} {:<15.6f} {:<15.6f} {:<20.6f} {:<20.6f}\n".format(
-                                *row
+                            "{:<10} {:<15.{dp}f} {:<15.{dp}f} {:<20.{dp}f} {:<20.{dp}f}\n".format(
+                                row[0],
+                                row[1],
+                                row[2],
+                                row[3],
+                                row[4],
+                                dp=num_decimal_places,
                             )
                         )
-            return p, i, errors
+            return p, i
 
         i += 1
         if f_p * f_a < 0:
