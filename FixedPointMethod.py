@@ -25,7 +25,7 @@ p = p0
 iterations = 0
 
 # Lists to store data for plotting
-x_values = np.linspace(p0 - 5, p0 + 5, 1000)  # Adjust the range as needed
+x_values = np.linspace(p0 - 2, p0 + 2, 1000)  # Adjust the range as needed
 f_values = [sp.N(g.subs(x, val))for val in x_values]
 p_values = []
 iteration_numbers = []
@@ -37,7 +37,7 @@ with open("FixedPointData.txt", "w") as file:
         "Iteration".ljust(10)
         + "Successive Approximation (p)".ljust(30)
         + "Function Value (g(p))".ljust(30)
-        + "Relative Error (|pn+1-pn| / |pn+1|)\n"
+        + "Relative Error (|pn+1-pn| / |pn+1|-p0)\n"
     )
     file.write(header)
 
@@ -56,7 +56,7 @@ with open("FixedPointData.txt", "w") as file:
             relative_error = 0.0
         else:
             # Calculate the relative error
-            relative_error = abs(p_next - p) / abs(p_next)
+            relative_error = abs(p_next - p) / abs(p_next - p0)
 
         # Format the data row
         data_row = (
