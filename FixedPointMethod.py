@@ -38,12 +38,12 @@ with open("FixedPointData.txt", "w") as file:
             + "Successive Approximation (p)".ljust(30)
             + "Function Value (g(p))".ljust(30)
             + "Relative Error (|pn+1-pn| / |pn+1|-p0)".ljust(30)
-            + "Asymptotic Constant (c)\n"
     )
     file.write(header)
 
     start_time = time.time()
 
+    p_values.append(p)
     while True:
         iterations += 1
 
@@ -86,15 +86,15 @@ with open("FixedPointData.txt", "r") as read_file:
     lines = read_file.readlines()
 
 with open("FixedPointData.txt", "w") as write_file:
-    write_file.writelines(lines[:-1])  # Remove the last line (header)
+    write_file.writelines(lines)  # Remove the last line (header)
     write_file.write("Asymptotic Constant (c)\n")
-    for i in range(1, len(p_values)):
-        asymptotic_constant = abs((p_values[i] - p_next) / (p_next - p_values[i - 1]))
+    for i in range(0, len(p_values)-1):
+        asymptotic_constant = abs((p_values[i+1] - p_next) / (p_next - p_values[i]))
         write_file.write(f"{asymptotic_constant:.15f}\n")
 
 # Print the result
 print(f"Root: {p_next:.15f}")
-print(f"Number of iterations: {iterations-1}")
+print(f"Number of iterations: {iterations}")
 print(f"CPU time required: {end_time - start_time} seconds")
 
 # Plot the function f(x) and iterations
@@ -109,7 +109,7 @@ plt.scatter(
 )
 plt.xlabel("x")
 plt.ylabel("f(x)")
-plt.title("Newton's Method: Function and Iterations")
+plt.title("Fixed Point Method: Function and Iterations")
 plt.legend()
 plt.grid()
 

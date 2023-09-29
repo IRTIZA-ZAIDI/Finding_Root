@@ -50,6 +50,8 @@ else:
 
         start_time = time.time()
 
+        p_values.append(p)
+
         while True:
             iterations += 1
 
@@ -87,27 +89,38 @@ else:
             p = p_next
 
         end_time = time.time()
+# Calculate and add the asymptotic constant to the text file
+with open("NewtonData.txt", "r") as read_file:
+    lines = read_file.readlines()
 
-        # Plot the function f(x) and iterations
-        plt.figure(figsize=(10, 6))
-        plt.plot(x_values, f_values, label="f(x)")
-        plt.scatter(
-            p_values,
-            [sp.N(f.subs(x, val)) for val in p_values],
-            color="red",
-            marker="x",
-            label="Iterations",
-        )
-        plt.xlabel("x")
-        plt.ylabel("f(x)")
-        plt.title("Newton's Method: Function and Iterations")
-        plt.legend()
-        plt.grid()
+with open("NewtonData.txt", "w") as write_file:
+    write_file.writelines(lines)  # Remove the last line (header)
+    write_file.write("Asymptotic Constant (c)\n")
+    for i in range(0, len(p_values)-1):
+        asymptotic_constant = abs((p_values[i+1] - p_next) / (p_next - p_values[i]))
+        write_file.write(f"{asymptotic_constant:.15f}\n")
 
-        # Show the plot
-        plt.show()
+# Print the result
+print(f"Root: {p_next:.15f}")
+print(f"Number of iterations: {iterations}")
+print(f"CPU time required: {end_time - start_time} seconds")
 
-        # Print the result
-        print(f"Root: {p_next:.15f}")
-        print(f"Number of iterations: {iterations}")
-        print(f"CPU time required: {end_time - start_time} seconds")
+# Plot the function f(x) and iterations
+plt.figure(figsize=(10, 6))
+plt.plot(x_values, f_values, label="f(x)")
+plt.scatter(
+    p_values,
+    [sp.N(f.subs(x, val)) for val in p_values],
+    color="red",
+    marker="x",
+    label="Iterations",
+)
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.title("Newton's Method: Function and Iterations")
+plt.legend()
+plt.grid()
+
+# Show the plot
+plt.show()
+
