@@ -26,7 +26,7 @@ iterations = 0
 
 # Lists to store data for plotting
 x_values = np.linspace(p0 - 2, p0 + 2, 1000)  # Adjust the range as needed
-f_values = [sp.N(g.subs(x, val))for val in x_values]
+f_values = [sp.N(g.subs(x, val)) for val in x_values]
 p_values = []
 iteration_numbers = []
 
@@ -34,10 +34,11 @@ iteration_numbers = []
 with open("FixedPointData.txt", "w") as file:
     # Format the header row
     header = (
-        "Iteration".ljust(10)
-        + "Successive Approximation (p)".ljust(30)
-        + "Function Value (g(p))".ljust(30)
-        + "Relative Error (|pn+1-pn| / |pn+1|-p0)\n"
+            "Iteration".ljust(10)
+            + "Successive Approximation (p)".ljust(30)
+            + "Function Value (g(p))".ljust(30)
+            + "Relative Error (|pn+1-pn| / |pn+1|-p0)".ljust(30)
+            + "Asymptotic Constant (c)\n"
     )
     file.write(header)
 
@@ -60,10 +61,10 @@ with open("FixedPointData.txt", "w") as file:
 
         # Format the data row
         data_row = (
-            str(iterations).ljust(10)
-            + f"{p:.15f}".ljust(30)
-            + f"{g_value:.15f}".ljust(30)
-            + f"{relative_error:.15f}\n"
+                str(iterations).ljust(10)
+                + f"{p:.15f}".ljust(30)
+                + f"{g_value:.15f}".ljust(30)
+                + f"{relative_error:.15f}\n"
         )
 
         # Write data to the text file
@@ -73,36 +74,47 @@ with open("FixedPointData.txt", "w") as file:
         p_values.append(p)
         iteration_numbers.append(iterations)
 
-        if abs(p_next-p) < epsilon:
+        if relative_error < epsilon:
             break
 
         p = p_next
 
     end_time = time.time()
 
-    # Plot the function g(x) and iterations
-    plt.figure(figsize=(10, 6))
-    plt.plot(x_values, f_values, label="f(x)")
-    plt.scatter(
-        p_values,
-        [sp.N(g.subs(x, val)) for val in p_values],
-        color="red",
-        marker="x",
-        label="Iterations",
-    )
-    plt.xlabel("x")
-    plt.ylabel("g(x)")
-    plt.title("Fixed-Point Iteration: Function and Iterations")
-    plt.legend()
-    plt.grid()
+# Calculate and add the asymptotic constant to the text file
+with open("FixedPointData.txt", "r") as read_file:
+    lines = read_file.readlines()
 
-    # Show the plot
-    plt.show()
+with open("FixedPointData.txt", "w") as write_file:
+    write_file.writelines(lines[:-1])  # Remove the last line (header)
+    write_file.write("Asymptotic Constant (c)\n")
+    for i in range(1, len(p_values)):
+        asymptotic_constant = abs((p_values[i] - p_next) / (p_next - p_values[i - 1]))
+        write_file.write(f"{asymptotic_constant:.15f}\n")
 
-    # Print the result
-    print(f"Root: {p_next:.15f}")
-    print(f"Number of iterations: {iterations}")
-    print(f"CPU time required: {end_time - start_time} seconds")
+# Print the result
+print(f"Root: {p_next:.15f}")
+print(f"Number of iterations: {iterations-1}")
+print(f"CPU time required: {end_time - start_time} seconds")
+
+# Plot the function f(x) and iterations
+plt.figure(figsize=(10, 6))
+plt.plot(x_values, f_values, label="f(x)")
+plt.scatter(
+    p_values,
+    [sp.N(g.subs(x, val)) for val in p_values],
+    color="red",
+    marker="x",
+    label="Iterations",
+)
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.title("Newton's Method: Function and Iterations")
+plt.legend()
+plt.grid()
+
+# Show the plot
+plt.show()
 
 # exp(x) + 2**(-x) + 2 * cos(x) - 6
 # ln(-2**(-x)-2*cos(x)+6)
