@@ -1,101 +1,213 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sympy as sp
+import math
 
-# Define the symbolic variable x
-x = sp.symbols('x')
+# evaluates Lagrange at x
+def Lagrange(x):
+    y = 0
+    for i in range(len(x_values)):
+        denominator = 1
+        numerator = 1
+        for j in range(len(y_values)):
+            if i == j:
+                continue
+            numerator = numerator * (x - x_values[j])
+            denominator = denominator * (x_values[i] - x_values[j])
+        y = y + (numerator / denominator) * y_values[i]
+    return y
 
-# Function to construct the Divided Difference Table
-def DDTable(x_values, f_values):
-    n = len(x_values)
-    table = np.zeros((n, n))
-    table[:, 0] = f_values
+# evaluates coefficients of Polynomial
+def DDTable():
+    DDTable = [y_values]
+    for i in range(len(y_values) - 1):
+        M = []
+        for j in range(len(y_values) - 1 - i):
+            numerator = DDTable[i][j + 1] - DDTable[i][j]
+            denominator = x_values[j + 1 + i] - x_values[j]
+            M.append(numerator / denominator)
+        DDTable.append(M)
+    return DDTable
 
-    for j in range(1, n):
-        for i in range(n - j):
-            table[i][j] = (table[i + 1][j - 1] - table[i][j - 1]) / (x_values[i + j] - x_values[i])
+# evaluates Polynomial at x
+def DDPolynomial(x):
+    y = DDTableArray[0][0]
+    for i in range(len(y_values) - 1):
+        P = 1
+        for j in range(i + 1):
+            P = P * (x - x_values[j])
+        y = y + P * DDTableArray[i + 1][0]
+    return y
 
-        # Create a nicely formatted table as a string
-    table_str = f"{'x-values':<10} |"
-    for j in range(n):
-        table_str += f"{'D' + str(j):<15} |"
-    table_str += "\n"
-
-    for i in range(n):
-        table_str += f"{x_values[i]:<10.4f} |"
-        for j in range(n):
-            table_str += f"{table[i][j]:<15.4f} |"
-        table_str += "\n"
-
-    # Save the table to a text file
-    with open("Divided_Difference_Table.txt", 'w') as file:
-        file.write(table_str)
-
-    return table
-
-
-# Function to construct the Lagrange polynomial
-def Lagrange(x_values, f_values, x):
-    n = len(x_values)
-    result = 0
-    for i in range(n):
-        term = f_values[i]
-        for j in range(n):
-            if j != i:
-                term *= (x - x_values[j]) / (x_values[i] - x_values[j])
-        result += term
-    return result
+# Given equation
+def f(x):
+    fx = "math.exp(x) + math.pow(2,-x) + 2*math.cos(x) - 6"
+    val = eval(fx)
+    return val
 
 
-# Function to construct the Divided Difference polynomial using DDTable
-def DDPolynomial(x_values, table, x):
-    n = len(x_values)
-    result = table[0, 0]
-    product_term = 1
+def generateGivenEquation():  # for given eq
 
-    for j in range(1, n):
-        product_term *= (x - x_values[j - 1])
-        result += table[0, j] * product_term
+    global x_values, y_values, LagrangeTable, DDTableArray, PolynomialTable, x_values_100, ErrorTableLagrange, ErrorTablePolynomial
 
-    return result
+    n = int(input("Enter value for n: "))
+    x_values = np.linspace(-2, 2, n)
+    y_values = []
+    LagrangeTable = []
+    DDTableArray = []
+    PolynomialTable = []
+    x_values_100 = np.linspace(-2, 2, 100)
+    y_values_100 = []
+    ErrorTableLagrange = []
+    ErrorTablePolynomial = []
+
+    for x in x_values:
+        y_values.append(f(x))
+
+    for x in x_values_100:
+        y_values_100.append(f(x))
+
+    for x in x_values_100:
+        LagrangeTable.append(Lagrange(x))
+
+    DDTableArray = DDTable()
+    for x in x_values_100:
+        PolynomialTable.append(DDPolynomial(x))
 
 
-# Input from the user
-equation = input("Enter function to evaluate: ")  #exp(x) + 2**-x + 2*cos(x) - 6
-expr = sp.sympify(equation)
-a1 = float(input("Enter start of interval: "))
-a2 = float(input("Enter end of interval: "))
-a1 = float(a1)
-a2 = float(a2)
-n = int(input("Enter number of n: "))
-x_values = np.linspace(a1, a2, n)
-f_values = [expr.subs(x, x_val) for x_val in x_values]
+    for x in range(len(LagrangeTable)):
+        ErrorTableLagrange.append(abs(float(y_values_100[x]) - LagrangeTable[x]))
 
-# Construct the Divided Difference Table
-table = DDTable(x_values, f_values)
-# Symbolic representation of the polynomial
-dd_poly = DDPolynomial(x_values, table, x)
+    for x in range(len(PolynomialTable)):
+        ErrorTablePolynomial.append(abs(float(y_values_100[x]) - PolynomialTable[x]))
 
-# Generate additional points for plotting
-x_plot = x_values
-f_plot = f_values
-lagrange_plot = [Lagrange(x_values, f_values, x) for x in x_plot]
-dd_poly_plot = [dd_poly.subs(x, x_val).evalf() for x_val in x_plot]
-print(dd_poly_plot)
-error_plot = [expr.subs(x, x_val) - dd_poly.subs(x, x_val).evalf() for x_val in x_plot]
+    print("x_values: ", x_values)
+    print("y_values: ", y_values)
+    print("Lagrange coefficients: ", LagrangeTable, "\n")
+    print("DD Polynomial coefficients: ", PolynomialTable, "\n")
+    print("Lagrange Error: ", ErrorTableLagrange, "\n")
+    print("Polynomial Error: ", ErrorTablePolynomial, "\n")
+    print("DD Table: ")
+    DDTablePrint()
+    plt.subplot(2, 1, 1)
+    plt.plot(x_values, y_values, label="f(x) n=" + str(len(y_values)), color='Green')
+    plt.plot(x_values_100, LagrangeTable, label="Lagrange n=" + str(len(x_values_100)), color='Blue')
+    plt.plot(x_values_100, PolynomialTable, label="Divided Difference n=" + str(len(x_values_100)), color='Red')
+    plt.title("Given equation")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend()
+    plt.subplot(2, 1, 2)
+    plt.plot(x_values_100, ErrorTableLagrange, label="Lagrange n=" + str(len(x_values_100)), color='Blue')
+    plt.plot(x_values_100, ErrorTablePolynomial, label="Divided Difference n=" + str(len(x_values_100)), color='Red')
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig('eq.png')
+    plt.show()
 
-# Plot the graphs
-plt.figure(figsize=(12, 8))
 
-plt.subplot(2, 1, 1)
-plt.plot(x_plot, f_plot, label='f(x)', color='blue', linewidth=2)
-plt.plot(x_plot, lagrange_plot, label='Lagrange Polynomial', color='green', linestyle='--')
-plt.plot(x_plot, dd_poly_plot, label='Divided Difference Polynomial', color='red', linestyle='-.')
-plt.plot(x_plot, error_plot, label='Error (f(x) - Pn(x))', color='purple')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.legend()
-plt.title('Polynomial Interpolation')
+def ExampleQuestion_19():  # for q19
 
-plt.tight_layout()
-plt.show()
+    global x_values
+    global y_values
+    global LagrangeTable
+
+    global x_values_n
+
+    x_values = [0, 6, 10, 13, 17, 20, 28]
+    y_values = [6.67, 17.33, 42.67, 37.33, 30.10, 29.31, 28.74]
+    LagrangeTable = []
+    x_values_n = np.linspace(0, 28, 28)
+
+    for x in x_values_n:
+        LagrangeTable.append(Lagrange(x))  # values of Lagrange with n=28
+
+    print("Instance 1")
+    print("X: ", x_values)
+    print("Y: ", y_values)
+    print("Lagrange coefficients: ", LagrangeTable)
+    print()
+    print("Maximum Interpolated Weight: ", max(LagrangeTable))
+    print()
+
+    plt.clf()
+    plt.plot(x_values, y_values, label="f(x) n=" + str(len(y_values)), color='Red')
+    plt.plot(x_values_n, LagrangeTable, label="Lagrange n=" + str(len(x_values_n)), color='Blue')
+    plt.title("Instance 1")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend()
+    plt.savefig("Instance 1")
+    plt.show()
+
+    y_values = [6.67, 16.11, 18.89, 15.00, 10.56, 9.44, 8.89]
+    LagrangeTable = []
+
+    for x in x_values_n:
+        LagrangeTable.append(Lagrange(x))  # values of Lagrange with n=28
+
+    print("Instance 2")
+    print("X: ", x_values)
+    print("Y: ", y_values)
+    print("Lagrange coefficients: ", LagrangeTable)
+    print()
+    print("Maximum Interpolated Weight: ", max(LagrangeTable))
+    print()
+
+    plt.clf()
+    plt.plot(x_values, y_values, label="f(x) n=" + str(len(y_values)), color='Red')
+    plt.plot(x_values_n, LagrangeTable, label="Lagrange n=" + str(len(x_values_n)), color='Blue')
+    plt.title("Instance 2")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend()
+    plt.savefig("Instance 2")
+    plt.show()
+
+# Print DDTable in triangle shape
+def DDTablePrint():
+    PrintTable = []
+    max_num_length = 0;
+
+    max_size = len(DDTableArray[0])
+    for Diff in DDTableArray:
+
+        size = max_size - len(Diff)
+        newArr = []
+        for num in Diff:
+            num = '{:.4e}'.format(num)
+            newArr.append(num)
+            newArr.append(" ")
+            max_num_length = max(max_num_length, len(str(num)))
+
+
+        newArr = [" "] * size + newArr + [" "] * (size - 1)
+        PrintTable.append(newArr)
+
+    PrintTable[0].pop()
+
+
+    PrintTable = np.transpose(PrintTable)
+
+    for arr in PrintTable:
+        for num in arr:
+            print(num, end=" " * ((max_num_length + 1) - len(num)))
+        print("", end="\n")
+
+
+def main():
+    decision = (input("Press (1) to interpolate given equation in the question\n"
+                      "Press (2) to interpolate question 19 of Ex 3.1\n"))
+    if decision == "1":
+        generateGivenEquation()
+        return
+    elif decision == "2":
+        ExampleQuestion_19()
+        return
+    else:
+        print("This is not a valid option.")
+        return
+
+if __name__ == "__main__":
+    main()
